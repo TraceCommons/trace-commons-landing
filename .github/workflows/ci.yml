@@ -53,7 +53,6 @@ jobs:
             --retry-wait-time 5
             --max-retries 2
             --accept 200,206,429
-            --exclude-mail
             --exclude '^https?://near\.com'
             './*.html'
             './*.md'
