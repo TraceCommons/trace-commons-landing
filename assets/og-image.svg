@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <!-- background: warm near-black with amber radial glow at right -->
+  <defs>
+    <radialGradient id="glow" cx="78%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#d99a3d" stop-opacity="0.18"/>
+      <stop offset="60%" stop-color="#d99a3d" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#2a2722" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="#1f1d1a"/>
+  <rect width="1200" height="630" fill="url(#grid)" opacity="0.6"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <!-- Title block (left half) -->
+  <g font-family="'Space Grotesk', -apple-system, sans-serif" fill="#f7f5f1">
+    <!-- eyebrow tag -->
+    <g transform="translate(80,108)">
+      <rect width="270" height="30" rx="15" fill="none" stroke="#3f3a32" stroke-width="1"/>
+      <text x="14" y="20" font-family="'JetBrains Mono', ui-monospace, monospace"
+            font-size="11" fill="#d99a3d" font-weight="700" letter-spacing="1.6">TRACE COMMONS</text>
+      <text x="138" y="20" font-family="'JetBrains Mono', ui-monospace, monospace"
+            font-size="11" fill="#6a665d" letter-spacing="1.6">/</text>
+      <text x="154" y="20" font-family="'JetBrains Mono', ui-monospace, monospace"
+            font-size="11" fill="#a39c8e" letter-spacing="1.6">PROVENANCE LAYER</text>
+    </g>
+    <!-- main wordmark -->
+    <text x="80" y="240" font-size="84" font-weight="600" letter-spacing="-3">Your agent traces</text>
+    <text x="80" y="320" font-size="84" font-weight="600" letter-spacing="-3"
+          font-family="'Instrument Serif', Georgia, serif" font-style="italic">are the new oil.</text>
+    <text x="80" y="400" font-size="36" font-weight="500" letter-spacing="-1" fill="#a39c8e">Stop giving them away.</text>
+  </g>
+
+  <!-- Agent-trajectory glyph (right side) -->
+  <g transform="translate(720, 80)">
+    <!-- edges (faint) -->
+    <g stroke="#3f3a32" stroke-width="1.4" fill="none">
+      <line x1="50" y1="240" x2="160" y2="100"/>
+      <line x1="160" y1="100" x2="290" y2="40"/>
+      <line x1="290" y1="40" x2="400" y2="100"/>
+      <line x1="160" y1="100" x2="290" y2="240"/>
+      <line x1="290" y1="240" x2="400" y2="240"/>
+      <line x1="290" y1="240" x2="200" y2="380"/>
+      <line x1="200" y1="380" x2="320" y2="380"/>
+      <line x1="320" y1="380" x2="430" y2="240"/>
+    </g>
+    <!-- edges (active) -->
+    <g stroke="#d99a3d" stroke-width="2.4" fill="none" opacity="0.95">
+      <line x1="50" y1="240" x2="160" y2="100"/>
+      <line x1="160" y1="100" x2="290" y2="40"/>
+      <line x1="290" y1="40" x2="400" y2="100"/>
+      <line x1="160" y1="100" x2="290" y2="240"/>
+    </g>
+    <!-- nodes -->
+    <g fill="#d99a3d" stroke="#d99a3d" stroke-width="2">
+      <!-- prompt: diamond -->
+      <rect x="30" y="220" width="40" height="40" transform="rotate(45 50 240)"/>
+      <!-- reason: circle -->
+      <circle cx="160" cy="100" r="16"/>
+      <!-- tool: square -->
+      <rect x="274" y="24" width="32" height="32"/>
+      <!-- observe: circle -->
+      <circle cx="400" cy="100" r="16" fill="#1f1d1a" stroke="#d99a3d"/>
+      <!-- plan: circle (active) -->
+      <circle cx="290" cy="240" r="16"/>
+      <!-- tx.send: square (faint) -->
+      <rect x="384" y="224" width="32" height="32" fill="#1f1d1a" stroke="#7a6c4e"/>
+      <!-- fail: circle (faint) -->
+      <circle cx="200" cy="380" r="16" fill="#1f1d1a" stroke="#7a6c4e"/>
+      <!-- recover: circle (faint) -->
+      <circle cx="320" cy="380" r="16" fill="#1f1d1a" stroke="#7a6c4e"/>
+      <!-- settle: diamond (faint) -->
+      <rect x="410" y="220" width="40" height="40" transform="rotate(45 430 240)" fill="#1f1d1a" stroke="#7a6c4e"/>
+    </g>
+    <!-- node labels -->
+    <g font-family="'JetBrains Mono', ui-monospace, monospace" font-size="11"
+       fill="#a39c8e" letter-spacing="0.6">
+      <text x="50" y="290" text-anchor="middle">USER</text>
+      <text x="160" y="142" text-anchor="middle" fill="#f7f5f1">reason</text>
+      <text x="290" y="80" text-anchor="middle" fill="#f7f5f1">search</text>
+      <text x="400" y="142" text-anchor="middle">obs</text>
+      <text x="290" y="282" text-anchor="middle" fill="#f7f5f1">plan</text>
+      <text x="400" y="282" text-anchor="middle">tx.send</text>
+      <text x="200" y="422" text-anchor="middle">retry</text>
+      <text x="320" y="422" text-anchor="middle">recover</text>
+      <text x="430" y="290" text-anchor="middle">settle</text>
+    </g>
+  </g>
+
+  <!-- footer caption -->
+  <g font-family="'JetBrains Mono', ui-monospace, monospace" fill="#6a665d"
+     font-size="14" letter-spacing="2">
+    <text x="80" y="570">CAPTURE · REDACT · SCORE · MINT</text>
+    <text x="1120" y="570" text-anchor="end" fill="#d99a3d">PILOT LIVE · MAY 2026</text>
+  </g>
+</svg>

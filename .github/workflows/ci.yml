@@ -1,0 +1,64 @@
+# Landing-page CI.
+#
+# Two jobs:
+#   - html-lint: htmlhint catches malformed tags, dup ids, missing alts.
+#   - link-check: lychee follows every internal + external link in HTML/MD/JSX
+#                 and reports broken ones. Failure-on-error is enabled so a dead
+#                 link to a renamed repo or a moved doc fails the PR.
+#
+# No build step. The page itself has no build step either; CI just lints.
+
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  html-lint:
+    name: htmlhint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+      - run: npm install --no-save --silent htmlhint@1.1.4
+      - name: Lint index.html
+        run: npx htmlhint --config .htmlhintrc index.html
+
+  link-check:
+    name: link check (lychee)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - name: Run lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          # Check the rendered page contents, the README, and the JSX files.
+          # JSX strings contain the same hrefs as the rendered output, so
+          # checking them catches drift the rendered output would also have.
+          args: >-
+            --no-progress
+            --max-concurrency 8
+            --timeout 20
+            --retry-wait-time 5
+            --max-retries 2
+            --accept 200,206,429
+            --exclude-mail
+            --exclude '^https?://near\.com'
+            './*.html'
+            './*.md'
+            './*.jsx'
+          fail: true
+          format: markdown
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
