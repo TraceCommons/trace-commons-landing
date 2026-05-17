@@ -54,6 +54,8 @@ jobs:
             --max-retries 2
             --accept 200,206,429
             --exclude '^https?://near\.com'
+            --exclude '^https?://claude\.ai'
+            --exclude '^https?://github\.com/.*/settings'
             './*.html'
             './*.md'
             './*.jsx'
