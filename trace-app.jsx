@@ -52,12 +52,12 @@ function Nav() {
       <div className="nav-links">
         <span className="nav-status">
           <span className="dot"></span>
-          PILOT&nbsp;LIVE&nbsp;·&nbsp;MAY&nbsp;2026
+          PILOT&nbsp;·&nbsp;INVITE-ONLY&nbsp;·&nbsp;MAY&nbsp;2026
         </span>
         <a href="https://github.com/TraceCommons/trace-commons-server" target="_blank" rel="noopener">GitHub</a>
         <a href="https://github.com/TraceCommons/trace-commons-server/blob/main/docs/trace-commons.md" target="_blank" rel="noopener">Protocol</a>
         <a className="cta cta-sm" href="https://near.com" target="_blank" rel="noopener">
-          Start mining<span className="arr">↗</span>
+          Request invite<span className="arr">↗</span>
         </a>
       </div>
     </nav>
@@ -75,19 +75,20 @@ function Hero({ accent }) {
             <span>provenance layer for agent trajectories</span>
           </div>
           <h1 className="display">
-            Your agent traces are <em>the new oil</em>.
-            <br/>
-            Stop giving them away.
+            When an agent works for you,<br/>
+            it leaves <em>a trail of what happened</em>.
           </h1>
           <p className="lede">
-            Every prompt you type into ChatGPT is subsidized — paid for in the trajectory
-            data you leave behind. Trace Commons is a user-owned environment for that data:
-            captured locally, redacted before upload, scored inside a TEE, and minted into
-            non-transferable credits bound to the value you produced.
+            That trail — the tools it called, the places it failed, the result it gave back —
+            is the rarest training material in AI. Right now it goes straight to whoever ran
+            the model, and you did not specifically agree to that. Trace Commons keeps the
+            record under your control: captured and scrubbed on your machine, gated for
+            novelty <em>and</em> substance on a shared server, signed and filed into a
+            register that buyers can later query under selective disclosure.
           </p>
           <div className="hero-ctas">
             <a className="cta cta-lg" href="https://near.com" target="_blank" rel="noopener">
-              Start mining Trace Credits
+              Request a pilot invite
               <span className="arr">→</span>
             </a>
             <a className="cta-ghost" href="https://github.com/TraceCommons/trace-commons-server" target="_blank" rel="noopener">
@@ -95,9 +96,9 @@ function Hero({ accent }) {
             </a>
           </div>
           <div className="hero-stats">
-            <Stat k="Phase" v="A · Pilot" />
-            <Stat k="Scoring" v="TEE · NEAR&nbsp;AI" />
-            <Stat k="Default" v="opt-in, redacted" />
+            <Stat k="Phase" v="A · Pilot · invite-only" />
+            <Stat k="Review" v="novelty + substance" />
+            <Stat k="Default" v="opt-in, scrubbed" />
             <Stat k="Credits" v="non-transferable" />
           </div>
         </div>
@@ -121,12 +122,12 @@ function Stat({ k, v }) {
 function Marquee() {
   const items = [
     "AGENT TRAJECTORIES",
-    "LOCAL REDACTION",
-    "TEE-HOSTED SCORING",
-    "HASH-ONLY ATTESTATION",
-    "USER-OWNED DATA",
-    "NEAR AI STACK",
-    "RANKING EVIDENCE",
+    "LOCAL CAPTURE & SCRUB",
+    "TWO-GATE REVIEW",
+    "SIGNED ON-CHAIN REGISTER",
+    "SELECTIVE DISCLOSURE",
+    "USER-OWNED RECORDS",
+    "NEAR SETTLEMENT",
     "NON-TRANSFERABLE CREDITS",
   ];
   return (
@@ -150,18 +151,21 @@ function WhyNow() {
         <span className="sec-title">WHY&nbsp;NOW</span>
       </div>
       <h2 className="display-2">
-        You are paying for ChatGPT and&nbsp;Claude<br/>
-        <em>with your trajectories</em>.
+        You produce the trail.<br/>
+        <em>You did not agree to give it away.</em>
       </h2>
       <div className="two-col">
         <p className="body-lg">
-          The subsidy is the point. Frontier labs aren't burning capital to be nice —
-          they're buying the rarest training material on earth: real humans steering
-          real agents through real workflows that fail, recover, and succeed.
+          When an AI agent does work for you, it leaves a record of what actually
+          happened: the tools it called, the places it failed, the result it gave
+          back. The companies building the next generation of agents need millions
+          of those records to train against, and most of them live inside private
+          user sessions today.
         </p>
         <p className="body-lg">
-          That data flows one way. Out of your session. Into a closed corpus.
-          It comes back as a product you pay for. <em>Again.</em>
+          Right now you produce the trail and it goes straight to the company running
+          the model. The flow is one-way, the value is captured upstream, and what
+          comes back is the product you already pay for. <em>Again.</em>
         </p>
       </div>
       <div className="shift-row">
@@ -205,7 +209,7 @@ function Thesis() {
           <ThesisPoint n="i"   text="An agent trajectory is a workflow: reason, call a tool, observe, transact, fail, recover, succeed. It is the most compressed expression of human intent in compute." />
           <ThesisPoint n="ii"  text="Whoever owns the trajectory owns the model that learns from it. Whoever owns the model owns the next interface to the world." />
           <ThesisPoint n="iii" text="Today's collection layer is the inference API. Plaintext flows out. Credits flow up. Users get a chatbot." />
-          <ThesisPoint n="iv"  text="Trace Commons inverts the topology. Capture stays local. Redaction is deterministic. Scoring runs blind inside a TEE. Credits settle on-chain. The operator never sees plaintext." />
+          <ThesisPoint n="iv"  text="Trace Commons inverts the topology. Capture and scrubbing stay on your machine. Server-side review tests two things: novelty and substance. Accepted records are signed, dated, and filed into a register that buyers query under selective disclosure. Credits — on-chain receipts of acceptance — flow back to the contributor. The next milestone moves scoring into hardware the operator cannot read." />
         </div>
       </div>
     </section>
@@ -223,10 +227,10 @@ function ThesisPoint({ n, text }) {
 
 function Credits({ accent }) {
   const steps = [
-    { n: "01", k: "CAPTURE", t: "Local-first", b: "Agent runs in Ironclaw on your device. Traces stay off the network unless you opt in. Default is silence." },
-    { n: "02", k: "REDACT",  t: "Deterministic", b: "Text and tool payloads are stripped or replaced with stable placeholders before a single byte leaves the host." },
-    { n: "03", k: "SCORE",   t: "Blind, in TEE", b: "An attested enclave scores novelty against a frontier model. The operator sees a number, never plaintext." },
-    { n: "04", k: "MINT",    t: "Hash-only", b: "Accepted traces mint Trace Credits via a hash-only attestation pipeline. Bound to evidence. Non-transferable." },
+    { n: "01", k: "CAPTURE", t: "On your machine", b: "Agent runs in Ironclaw on your device. The record of what happened stays off the network unless you opt in. Default is silence." },
+    { n: "02", k: "SCRUB",   t: "Before upload", b: "Text and tool payloads are stripped or replaced with stable placeholders, locally, before a single byte leaves the host." },
+    { n: "03", k: "GATE",    t: "Two checks. Both must pass.", b: "On a shared server, one check asks whether the record is genuinely different from everything already filed. The other asks whether it is substantive work, not template-shaped filler." },
+    { n: "04", k: "REGISTER", t: "Signed, dated, filed", b: "Accepted records are signed and filed into a register. A Trace Credit is the on-chain receipt that yours was accepted. Buyers query the register later under selective disclosure." },
   ];
   return (
     <section className="section credits">
@@ -235,12 +239,12 @@ function Credits({ accent }) {
         <span className="sec-title">TRACE&nbsp;CREDITS</span>
       </div>
       <h2 className="display-2">
-        Uploads don't pay. <em>Utility does.</em>
+        Uploads don't pay. <em>Acceptance does.</em>
       </h2>
       <p className="body-lg sub">
-        Trace Credits aren't a token for posting data. They are a non-transferable receipt
-        for trajectories that measurably improved a model, an evaluation, or a downstream task.
-        The pipeline is hash-only end-to-end.
+        A credit is the signed, on-chain record that one of your contributions was
+        accepted into the register. It is how recognition flows back to contributors
+        when buyers later pay to query the evidence. Credits cannot be traded.
       </p>
 
       <div className="pipeline">
@@ -264,15 +268,15 @@ function Credits({ accent }) {
         </div>
         <div className="rule">
           <div className="rule-k">RULE&nbsp;B</div>
-          <div className="rule-v">Redact before upload. No plaintext ever leaves your device.</div>
+          <div className="rule-v">Scrub before upload. No plaintext ever leaves your device.</div>
         </div>
         <div className="rule">
           <div className="rule-k">RULE&nbsp;C</div>
-          <div className="rule-v">Hash-only logs. Audit rows never carry identity.</div>
+          <div className="rule-v">Two gates: novelty and substance. Both must pass.</div>
         </div>
         <div className="rule">
           <div className="rule-k">RULE&nbsp;D</div>
-          <div className="rule-v">Credits attest to utility. Uploads alone earn nothing.</div>
+          <div className="rule-v">Credits attest to acceptance. Uploads alone earn nothing.</div>
         </div>
       </div>
     </section>
@@ -287,11 +291,12 @@ function BigCTA() {
         <em>commons</em>.
       </h2>
       <p className="bigcta-sub">
-        The pilot is live. Run an Ironclaw agent. Contribute redacted traces.
-        Earn credits bound to the value they produce.
+        The pilot is invite-only, waiting on its first real contributors. Bring an
+        Ironclaw agent, an invite, and a workload token. The next milestone moves
+        scoring into hardware that even the operators of the server cannot read.
       </p>
       <a className="cta cta-xl" href="https://near.com" target="_blank" rel="noopener">
-        Start mining Trace Credits
+        Request a pilot invite
         <span className="arr">→</span>
       </a>
       <div className="bigcta-meta">
@@ -299,7 +304,7 @@ function BigCTA() {
         <span className="sep">·</span>
         <span>wallet required</span>
         <span className="sep">·</span>
-        <span>opt-in, redacted, revocable</span>
+        <span>opt-in, scrubbed, revocable</span>
       </div>
     </section>
   );
@@ -314,7 +319,8 @@ function Footer() {
             <span className="wm-mark">◇</span> TRACE&nbsp;COMMONS
           </div>
           <p className="foot-tag">
-            A privacy-preserving commons for AI agent traces, with contributor rewards.
+            A user-owned register of agent work. Captured and scrubbed locally,
+            gated for novelty and substance, signed on-chain.
           </p>
         </div>
         <FootCol title="Protocol">
@@ -325,13 +331,13 @@ function Footer() {
         </FootCol>
         <FootCol title="Stack">
           <span className="foot-static">Ironclaw · client</span>
-          <span className="foot-static">NEAR AI Cloud · TEE scoring</span>
-          <span className="foot-static">Intel TDX + NVIDIA GPU TEE</span>
+          <span className="foot-static">NEAR AI Cloud · gating</span>
+          <span className="foot-static">Intel TDX + NVIDIA GPU TEE · Phase B</span>
           <span className="foot-static">NEAR · settlement</span>
         </FootCol>
         <FootCol title="Get started">
           <a href="https://near.com" target="_blank" rel="noopener">near.com&nbsp;↗</a>
-          <span className="foot-static">Phase A · pilot</span>
+          <span className="foot-static">Phase A · pilot · invite-only</span>
           <span className="foot-static">May 2026</span>
         </FootCol>
       </div>
