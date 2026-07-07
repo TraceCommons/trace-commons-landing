@@ -163,7 +163,7 @@ function TraceHero({ accent = "var(--accent)" }) {
         </text>
         <text x={W-20} y={H-16} textAnchor="end" fontFamily="var(--mono)" fontSize="11"
               fill="var(--fg-mute)" letterSpacing="0.14em">
-          redact ▸ score ▸ mint
+          scrub ▸ gate ▸ register
         </text>
       </svg>
     </div>
