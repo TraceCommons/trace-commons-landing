@@ -331,6 +331,7 @@ function Footer() {
         </FootCol>
         <FootCol title="Get started">
           <a href="https://near.com" target="_blank" rel="noopener">near.com&nbsp;↗</a>
+          <a href="/admin-guide/">Instance admin guide</a>
           <span className="foot-static">Phase A · pilot</span>
           <span className="foot-static">May 2026</span>
         </FootCol>

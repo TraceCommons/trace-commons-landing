@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instance Admin Guide — Trace Commons</title>
+<meta name="description" content="Operations runbook for enrolling a multi-user IronClaw instance in Trace Commons: invite-based enrollment, per-user pseudonymous attribution, user opt-out, and day-2 operations.">
+<meta property="og:title" content="Trace Commons — Instance Admin Guide">
+<meta property="og:description" content="Enroll a multi-user IronClaw instance in Trace Commons: one command, per-user salted attribution, user opt-out, day-2 ops.">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+  :root {
+    --accent: oklch(0.84 0.17 78);
+    --display: "Space Grotesk", -apple-system, sans-serif;
+    --serif:   "Instrument Serif", "Georgia", serif;
+    --mono:    "JetBrains Mono", ui-monospace, monospace;
+  }
+  html[data-mode="dark"] {
+    --bg:           oklch(0.13 0.006 80);
+    --bg-2:         oklch(0.16 0.006 80);
+    --bg-card:      oklch(0.17 0.008 80);
+    --fg:           oklch(0.97 0.005 80);
+    --fg-mute:      oklch(0.66 0.008 80);
+    --fg-faint:     oklch(0.44 0.008 80);
+    --line:         oklch(0.28 0.008 80);
+    --line-faint:   oklch(0.20 0.008 80);
+    --warn:         oklch(0.78 0.14 70);
+    --warn-soft:    oklch(0.22 0.03 70);
+    --accent-soft:  oklch(0.24 0.04 78);
+  }
+  html[data-mode="light"] {
+    --bg:           oklch(0.985 0.004 80);
+    --bg-2:         oklch(0.96 0.004 80);
+    --bg-card:      oklch(0.94 0.004 80);
+    --fg:           oklch(0.18 0.005 80);
+    --fg-mute:      oklch(0.42 0.006 80);
+    --fg-faint:     oklch(0.62 0.006 80);
+    --line:         oklch(0.84 0.005 80);
+    --line-faint:   oklch(0.92 0.005 80);
+    --warn:         oklch(0.55 0.13 70);
+    --warn-soft:    oklch(0.93 0.03 78);
+    --accent-soft:  oklch(0.9 0.05 78);
+  }
+  @media (prefers-color-scheme: light) { html:not([data-mode]) { color-scheme: light; } }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--body, var(--display));
+    line-height: 1.65;
+    margin: 0;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .site-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    max-width: 46rem; margin: 0 auto; padding: 1.4rem 1.4rem 0;
+  }
+  .wordmark {
+    font-family: var(--mono); font-size: 0.82rem; letter-spacing: 0.18em;
+    color: var(--fg); text-decoration: none;
+  }
+  .wordmark .wm-mark { color: var(--accent); }
+  .mode-btn {
+    background: none; border: 1px solid var(--line); border-radius: 999px;
+    color: var(--fg-mute); font-family: var(--mono); font-size: 0.7rem;
+    padding: 0.3rem 0.8rem; cursor: pointer; letter-spacing: 0.08em;
+  }
+  .mode-btn:hover { color: var(--fg); border-color: var(--fg-faint); }
+  .wrap { max-width: 46rem; margin: 0 auto; padding: 2.6rem 1.4rem 6rem; }
+  header.doc { border-bottom: 2px solid var(--accent); padding-bottom: 1.6rem; margin-bottom: 2.6rem; }
+  .eyebrow {
+    text-transform: uppercase; letter-spacing: 0.16em; font-size: 0.7rem;
+    font-weight: 500; font-family: var(--mono); color: var(--accent); margin: 0 0 0.7rem;
+  }
+  h1 {
+    font-family: var(--display); font-size: 2.1rem; font-weight: 600;
+    letter-spacing: -0.02em; line-height: 1.16; margin: 0 0 0.7rem; text-wrap: balance;
+  }
+  .meta { color: var(--fg-mute); font-size: 0.85rem; margin: 0; }
+  .meta code { font-size: 0.8rem; }
+  h2 {
+    font-family: var(--display); font-size: 1.3rem; font-weight: 600;
+    letter-spacing: -0.01em; margin: 3rem 0 0.8rem; text-wrap: balance;
+  }
+  h2 .no { color: var(--accent); font-family: var(--mono); font-size: 1.05rem; margin-right: 0.55rem; }
+  h3 { font-family: var(--display); font-size: 1.02rem; font-weight: 600; margin: 1.9rem 0 0.5rem; }
+  p, li { max-width: 66ch; }
+  ul, ol { padding-left: 1.3rem; }
+  li { margin-bottom: 0.35rem; }
+  a { color: var(--accent); }
+  em { font-family: var(--serif); font-size: 1.06em; }
+  code, pre { font-family: var(--mono); font-size: 0.84em; }
+  code { background: var(--bg-2); border: 1px solid var(--line-faint); border-radius: 4px; padding: 0.08em 0.35em; }
+  pre {
+    background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px;
+    padding: 0.9rem 1.1rem; overflow-x: auto; line-height: 1.55;
+  }
+  pre code { background: none; border: none; padding: 0; }
+  .callout {
+    border-left: 3px solid var(--accent); background: var(--accent-soft);
+    border-radius: 0 8px 8px 0; padding: 0.8rem 1.1rem; margin: 1.2rem 0;
+  }
+  .callout.warn { border-left-color: var(--warn); background: var(--warn-soft); }
+  .callout .label {
+    display: block; text-transform: uppercase; letter-spacing: 0.14em;
+    font-family: var(--mono); font-size: 0.65rem; font-weight: 700;
+    margin-bottom: 0.3rem; color: var(--accent);
+  }
+  .callout.warn .label { color: var(--warn); }
+  .callout p { margin: 0.3rem 0; }
+  .tablewrap { overflow-x: auto; margin: 1.2rem 0; }
+  table { border-collapse: collapse; font-size: 0.87rem; min-width: 100%; }
+  th {
+    text-align: left; text-transform: uppercase; letter-spacing: 0.1em;
+    font-family: var(--mono); font-size: 0.65rem; color: var(--fg-mute);
+    font-weight: 700; border-bottom: 2px solid var(--line); padding: 0.5rem 1rem 0.5rem 0;
+  }
+  td { border-bottom: 1px solid var(--line-faint); padding: 0.55rem 1rem 0.55rem 0; vertical-align: top; }
+  td code { white-space: nowrap; }
+  td.wrapcode code { white-space: normal; }
+  nav.toc {
+    background: var(--bg-card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 1rem 1.3rem; margin: 0 0 1rem; font-size: 0.92rem;
+  }
+  nav.toc ol { margin: 0.4rem 0 0; padding-left: 1.4rem; columns: 2; column-gap: 2.5rem; }
+  nav.toc li { margin-bottom: 0.25rem; break-inside: avoid; }
+  nav.toc a { text-decoration: none; }
+  nav.toc a:hover, nav.toc a:focus-visible { text-decoration: underline; }
+  @media (max-width: 560px) { nav.toc ol { columns: 1; } }
+  .foot-base {
+    max-width: 46rem; margin: 0 auto; padding: 1.4rem;
+    border-top: 1px solid var(--line-faint);
+    display: flex; justify-content: space-between; gap: 1rem;
+    color: var(--fg-faint); font-family: var(--mono); font-size: 0.72rem;
+  }
+  .foot-base a { color: var(--fg-mute); text-decoration: none; }
+  .foot-base a:hover { color: var(--fg); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<nav class="site-nav">
+  <a class="wordmark" href="/"><span class="wm-mark">&#9671;</span> TRACE&nbsp;COMMONS</a>
+  <button class="mode-btn" type="button" onclick="const h=document.documentElement;h.dataset.mode=h.dataset.mode==='dark'?'light':'dark';">MODE</button>
+</nav>
+<div class="wrap">
+<header class="doc">
+  <p class="eyebrow">IronClaw · Operations Runbook</p>
+  <h1>Onboarding an IronClaw instance to Trace Commons</h1>
+  <p class="meta">For administrators of multi-user IronClaw deployments — written for the <strong>near.ai</strong> and <strong>NEAR Foundation</strong> instances.<br>
+  Verified against <code>ironclaw</code> main as of 2026-07-09 (includes PR&nbsp;#5280 and PR&nbsp;#5858 — instance-enrollment CLI + in-app account access). Server side: <code>trace-commons-server</code> with per-user subject support (PR&nbsp;#152).</p>
+</header>
+
+<nav class="toc" aria-label="Contents">
+  <strong>Contents</strong>
+  <ol>
+    <li><a href="#model">What instance enrollment does</a></li>
+    <li><a href="#prereq">Before you start</a></li>
+    <li><a href="#enroll">Enroll the instance</a></li>
+    <li><a href="#verify">Verify enrollment</a></li>
+    <li><a href="#users">What your users will see</a></li>
+    <li><a href="#optout">User opt-out (communicate this)</a></li>
+    <li><a href="#ops">Day-2 operations</a></li>
+    <li><a href="#security">Security model in brief</a></li>
+    <li><a href="#instances">Notes for your two instances</a></li>
+    <li><a href="#cli">CLI quick reference</a></li>
+  </ol>
+</nav>
+
+<h2 id="model"><span class="no">1</span>What instance enrollment does</h2>
+<p>Trace Commons lets an IronClaw deployment contribute <em>redacted</em> agent traces to a shared corpus in exchange for credits. There are two enrollment models, and they coexist:</p>
+<ul>
+  <li><strong>Personal-invite enrollment</strong> — an individual user enrolls their own scope with an operator invite. Their traces are attributed to their own device key. This is unchanged by anything in this guide.</li>
+  <li><strong>Instance-wide enrollment</strong> — you, the admin, enroll the whole instance once. Every user who has <em>not</em> personally enrolled and has <em>not</em> explicitly opted out contributes under the instance enrollment, attributed per-user via a <strong>salted pseudonymous subject</strong> (the server never sees raw tenant/user IDs; the salt is random, per-instance, and never leaves the host).</li>
+</ul>
+<p>Precedence, enforced by the resolver (<code>resolve_trace_credentials</code>):</p>
+<ol>
+  <li>A user's own <em>enabled</em> personal enrollment always wins.</li>
+  <li>A user's <em>explicit opt-out</em> (a per-user policy that exists with <code>enabled=false</code>) blocks the instance fallback entirely — for capture, upload, and credential minting.</li>
+  <li>Otherwise, an enabled instance policy applies, with a per-user pseudonymous subject.</li>
+</ol>
+<p>The contribution pipeline for enrolled users: terminal turns are captured, run through the local redaction pipeline, queued on disk, and a background worker flushes eligible envelopes every <strong>5 minutes</strong> (eligibility gates: minimum local score, optional tool-name allowlist, and PII findings held for manual approval by default).</p>
+
+<h2 id="prereq"><span class="no">2</span>Before you start</h2>
+<h3>Get from the Trace Commons operator (NEAR AI)</h3>
+<ul>
+  <li><strong>An operator instance invite link</strong> — <code>https://&lt;host&gt;#&lt;code&gt;</code> (or <code>&lt;code&gt;@&lt;host&gt;</code>). This is all the recommended path needs: the enrollment handshake returns the tenant ID, ingest endpoint, and issuer configuration, trust-anchored to the invite's origin.</li>
+  <li>One invite <em>per instance</em>: near.ai and NEAR Foundation must enroll with distinct invites so they get <em>distinct tenant IDs</em> (see §9).</li>
+  <li>Only if you use the token-based fallback (§3, Path B): the ingestion endpoint URL, issuer URL + allowed hostnames, tenant ID, a workload/bearer token, and — if the server runs with <code>TRACE_COMMONS_ALLOWLIST_SOURCE</code> — a pilot invite code.</li>
+</ul>
+<h3>Decide your consent posture</h3>
+<p>Two flags control what enters envelopes <em>after</em> redaction; both default to off and you should set them deliberately, because they apply instance-wide for every inheriting user:</p>
+<ul>
+  <li><code>include_message_text</code> — redacted user/assistant message text.</li>
+  <li><code>include_tool_payloads</code> — redacted tool arguments, tool results, and HTTP bodies.</li>
+</ul>
+<h3>Know your paths</h3>
+<p>All state lives under the IronClaw base directory (<code>IRONCLAW_BASE_DIR</code>, default <code>~/.ironclaw</code>):</p>
+<div class="tablewrap"><table>
+  <tr><th>Path (relative to base dir)</th><th>What it is</th></tr>
+  <tr><td><code>trace_contributions/policy.json</code></td><td>The <strong>instance</strong> enrollment policy (scope <code>None</code>) — what you write in §3</td></tr>
+  <tr><td><code>trace_contributions/subject_salt</code></td><td>Per-instance random salt for pseudonymous subjects (0600, auto-created)</td></tr>
+  <tr><td><code>trace_contributions/device_keys/</code></td><td>Instance device keypair (device-key enrollment only)</td></tr>
+  <tr><td><code>trace_contributions/queue/</code></td><td>Queued redacted envelopes awaiting flush</td></tr>
+  <tr><td><code>trace_contributions/users/&lt;scope-hash&gt;/</code></td><td>Per-user state: personal policy, records, credits, login-link delivery files</td></tr>
+</table></div>
+
+<h2 id="enroll"><span class="no">3</span>Enroll the instance</h2>
+
+<h3>Path A — invite-based device-key enrollment (recommended)</h3>
+<p>One command, run as the OS user that owns the IronClaw service, on the instance host (host-shell possession is the admin gate):</p>
+<pre><code>ironclaw-reborn traces enroll-instance \
+  --invite 'https://&lt;trace-commons-host&gt;#&lt;invite-code&gt;'
+  # plus, only if chosen deliberately (applies instance-wide):
+  # --include-message-text --include-tool-payloads
+  # machine-readable output: --json</code></pre>
+<p>This performs the device-key onboarding handshake against the operator invite and writes the instance enrollment (<code>trace_contributions/policy.json</code>, auth mode <code>DeviceKey</code>) plus the instance device keypair. The command prints the enrolled tenant, ingest/issuer endpoints, device-key ID, and the user-facing implications; it fails closed — a rejected or expired invite leaves no partial enrollment behind.</p>
+<p>Every user without a personal enrollment now contributes under this enrollment, attributed via a <strong>salted per-user pseudonym</strong> — so credits, submitted-trace inspection, and account login links are all per-user. This is the model the feature was designed for and the right choice for both of your multi-user instances.</p>
+
+<h3>Path B — token-based enrollment via <code>opt-in</code> (fallback)</h3>
+<p>Only for deployments where the operator issues workload/bearer tokens instead of invites:</p>
+<pre><code>export TRACE_COMMONS_WORKLOAD_TOKEN=&lt;operator-issued workload token&gt;
+
+ironclaw-reborn traces opt-in \
+  --endpoint https://&lt;trace-commons-host&gt;/v1/traces \
+  --upload-token-issuer-url https://&lt;trace-commons-host&gt;/v1/trace-upload-claim \
+  --upload-token-issuer-allowed-hosts &lt;trace-commons-host&gt; \
+  --upload-token-audience trace-commons-ingest \
+  --upload-token-tenant-id &lt;your-tenant-id&gt; \
+  --upload-token-workload-token-env TRACE_COMMONS_WORKLOAD_TOKEN \
+  --upload-token-invite-code &lt;pilot-code-if-required&gt;</code></pre>
+<p>The workload-token env var must be present in the <strong>service's</strong> environment (daemon unit/env file), not just your shell.</p>
+<div class="callout warn">
+  <span class="label">Attribution caveat</span>
+  <p>Per-user pseudonymous subjects are only sent in <strong>device-key</strong> auth mode. Token-based enrollment attributes all contributions to the shared instance principal: credits pool at the instance level, and per-user account features (login links, submitted-trace inspection, community profiles) act on that shared account. Prefer Path A for any multi-user instance.</p>
+</div>
+
+<h2 id="verify"><span class="no">4</span>Verify enrollment</h2>
+<pre><code># Instance-level policy (the global/scope-None policy)
+ironclaw-reborn traces status --json
+
+# End-to-end reachability of the ingest + issuer
+ironclaw-reborn traces ingest-health
+
+# Queue diagnostics (per user scope with --user-scope tenant/user)
+ironclaw-reborn traces queue-status --json</code></pre>
+<p>Then confirm the resolver actually picks the instance policy up for a real user: from that user's WebUI, Settings → <strong>Trace Commons</strong> should show enrollment/credits rather than the not-enrolled zero state.</p>
+
+<h2 id="users"><span class="no">5</span>What your users will see</h2>
+<ul>
+  <li><strong>WebUI → Settings → Trace Commons</strong>: credit totals and explanations, submissions held for manual review (with an <em>Authorize</em> button for PII-flagged envelopes), a per-user list of submitted traces with status and pending/final credit, and — for enrolled users — an <strong>"Open Trace Commons account"</strong> button.</li>
+  <li><strong>Opening the Trace Commons account</strong>: the button mints a one-time login link server-side and opens the contributor's account page in a new tab. This is the path hosted multi-tenant users rely on — no shell or host-file access needed. The link is single-use, expires shortly, is pinned to the enrolled Trace Commons origin, and travels only over the authenticated WebUI response to the user's own browser (never logged, never in chat, never on any model-visible surface). Mints are rate-limited to 10/minute per user.</li>
+  <li><strong>Agent capabilities</strong> (all consent-gated with an approval prompt; the agent must ask before acting): <code>trace_commons.status</code>, <code>trace_commons.credits</code>, <code>trace_commons.onboard</code> (personal enrollment), <code>trace_commons.account_login_link</code>, <code>trace_commons.profile_token</code> / <code>profile_set</code>.</li>
+  <li><strong>Agent-path login links</strong> are likewise never shown in chat: when minted via the agent capability, the URL is written to a private local file (<code>account_login_link.&lt;uuid&gt;.url</code>, 0600, pruned after ~1 hour) under the user's trace-contribution directory — relevant for self-hosted single users; hosted users should use the Settings button instead.</li>
+  <li><strong>Community profiles</strong> (public handle/bio) are a separate, explicit opt-in per user — instance enrollment never publishes anything public on a user's behalf.</li>
+</ul>
+
+<h2 id="optout"><span class="no">6</span>User opt-out — communicate this before enrolling</h2>
+<p>Instance enrollment is opt-out for users, so tell them <em>before</em> you flip it on. To exclude a specific user (you run this on their behalf — hosted users have no shell):</p>
+<pre><code>ironclaw-reborn traces opt-out --user-scope &lt;tenant-id&gt;/&lt;user-id&gt;</code></pre>
+<p>With <code>--user-scope</code> this is a <strong>scoped-only</strong> opt-out: it writes that user's policy with <code>enabled=false</code> and <strong>blocks the instance fallback everywhere</strong> for them — no capture, no upload, no credential minting — while the instance enrollment and every other user are untouched. The precedence is regression-tested; a later instance re-enrollment does not override it.</p>
+<div class="callout warn">
+  <span class="label">Bare opt-out is the master switch</span>
+  <p><code>ironclaw-reborn traces opt-out</code> <em>without</em> <code>--user-scope</code> disables the <strong>instance-level enrollment itself</strong> (plus the owner scope) — every inheriting user stops contributing. Use it only to decommission the enrollment, never to opt out one user.</p>
+</div>
+<div class="callout">
+  <span class="label">Suggested user notice</span>
+  <p>"This instance contributes locally-redacted agent traces to Trace Commons for credits. Redaction runs on this host before anything is stored or sent; message text and tool payloads are <em>[included / not included]</em> per instance policy. You are identified only by a salted pseudonym. To opt out entirely, ask your admin — opting out affects only you, takes effect immediately, and cannot be overridden by re-enrollment."</p>
+</div>
+
+<h2 id="ops"><span class="no">7</span>Day-2 operations</h2>
+<ul>
+  <li><strong>Flush cadence</strong>: the background worker submits eligible envelopes and syncs credit status every 5 minutes. Manual kick: <code>ironclaw-reborn traces flush-queue</code>.</li>
+  <li><strong>Held submissions</strong>: PII-flagged envelopes wait for per-user authorization (WebUI Trace Commons tab). They never auto-submit unless the policy was created with the PII-review bypass, which you should not enable instance-wide.</li>
+  <li><strong>Credits</strong>: <code>ironclaw-reborn traces credit [--json]</code>; users see their own in the WebUI. Final credit lands after the status sync that follows submission.</li>
+  <li><strong>Revocation</strong>: <code>ironclaw-reborn traces list-submissions</code> then <code>traces revoke &lt;submission-id&gt;</code>. Revocation flags the submission server-side; local records are status-marked, never deleted.</li>
+  <li><strong>Do not delete <code>subject_salt</code></strong>. Rotating it silently re-pseudonymizes every user — the server will treat everyone as new contributors and per-user credit continuity breaks. Back it up with the same care as the device keys.</li>
+  <li><strong>Backups</strong>: the whole <code>trace_contributions/</code> tree is the local source of truth (policies, keys, salt, queue, records). Include it in host backups; it contains no plaintext secrets other than key material already scoped to this enrollment.</li>
+  <li><strong>Network</strong>: outbound HTTPS to the Trace Commons host only. All trace egress uses pinned DNS resolution with private/internal-IP rejection; agent-invoked calls additionally route through the host egress policy layer.</li>
+</ul>
+
+<h2 id="security"><span class="no">8</span>Security model in brief</h2>
+<ul>
+  <li>Redaction happens locally, <em>before</em> storage — the queue on disk already holds redacted envelopes only.</li>
+  <li>Users are pseudonymous to the server via <code>sha256(salt:scope)</code> with a per-instance random salt; raw tenant/user IDs never leave the host.</li>
+  <li>Every agent-initiated Trace Commons action is consent-gated (the model must obtain in-conversation confirmation) <em>and</em> approval-gated (the runtime asks the user), and routes through host network egress.</li>
+  <li>Non-agent network paths (CLI, background flush, WebUI fetches) use hardened HTTP clients: pinned DNS, private-IP filtering, no redirects, bounded response bodies.</li>
+  <li>One-time login links are pinned to the enrolled Trace Commons origin (server-side origin check + client-side http(s)-only guard) and delivered either over the authenticated WebUI response (hosted users) or a private local file (agent path) — never through the model transcript.</li>
+  <li>Explicit user opt-out takes precedence over instance enrollment on every code path.</li>
+</ul>
+
+<h2 id="instances"><span class="no">9</span>Notes for your two instances</h2>
+<ul>
+  <li><strong>Distinct tenant IDs.</strong> Request separate tenant IDs (and invite codes, if allowlisted) for near.ai and NEAR Foundation from the operator. The tenant ID feeds the upload-claim principal and the scope keys — sharing one would merge the two instances' contributor namespaces and credit accounting.</li>
+  <li><strong>Per-instance salts are automatic.</strong> Each instance generates its own <code>subject_salt</code>, so the same human with accounts on both instances appears as two unrelated pseudonyms. That is by design.</li>
+  <li><strong>Users with personal enrollments keep them.</strong> Anyone already personally enrolled (e.g. early pilot participants) is untouched by instance enrollment — personal enrollment wins in the resolver.</li>
+  <li><strong>Staged rollout suggestion:</strong> enroll the near.ai instance first with <code>include_message_text</code>/<code>include_tool_payloads</code> off, watch a week of queue diagnostics and held-submission volume, then decide the Foundation instance's consent posture with real data.</li>
+</ul>
+
+<h2 id="cli"><span class="no">10</span>CLI quick reference</h2>
+<div class="tablewrap"><table>
+  <tr><th>Command</th><th>What it does</th></tr>
+  <tr><td class="wrapcode"><code>ironclaw-reborn traces enroll-instance --invite …</code></td><td>Instance-wide device-key enrollment from an operator invite (recommended; per-user attribution)</td></tr>
+  <tr><td class="wrapcode"><code>ironclaw-reborn traces opt-in …</code></td><td>Token-based enablement; writes the instance policy + the invoking owner's scope policy</td></tr>
+  <tr><td class="wrapcode"><code>ironclaw-reborn traces opt-out --user-scope …</code></td><td>Scoped-only opt-out for one user (instance enrollment untouched)</td></tr>
+  <tr><td class="wrapcode"><code>ironclaw-reborn traces opt-out</code></td><td>Master off switch: disables the instance-level enrollment for everyone</td></tr>
+  <tr><td class="wrapcode"><code>ironclaw-reborn traces status [--json] [--user-scope …]</code></td><td>Show instance (global) or per-scope policy</td></tr>
+  <tr><td class="wrapcode"><code>ironclaw-reborn traces ingest-health</code></td><td>Check reachability of ingest endpoint + issuer</td></tr>
+  <tr><td class="wrapcode"><code>ironclaw-reborn traces queue-status [--json]</code></td><td>Local queue diagnostics (holds, retries, last failure)</td></tr>
+  <tr><td class="wrapcode"><code>ironclaw-reborn traces flush-queue</code></td><td>Submit eligible queued envelopes now</td></tr>
+  <tr><td class="wrapcode"><code>ironclaw-reborn traces credit [--json]</code></td><td>Credit totals + explanations</td></tr>
+  <tr><td class="wrapcode"><code>ironclaw-reborn traces list-submissions</code> / <code>revoke</code></td><td>List submitted traces; request server-side revocation</td></tr>
+  <tr><td class="wrapcode"><code>ironclaw-reborn traces preview</code> / <code>enqueue</code> / <code>submit</code></td><td>Manual single-envelope flow (inspect redaction output before anything is sent)</td></tr>
+  <tr><td class="wrapcode"><code>ironclaw-reborn traces profile token|set|withdraw</code></td><td>Community-profile management (separate public opt-in)</td></tr>
+</table></div>
+
+<p class="meta" style="margin-top:3rem">Sources: <code>crates/ironclaw_reborn_traces</code> (resolver, onboarding, contribution pipeline), <code>crates/ironclaw_reborn_cli/src/commands/traces</code> (incl. <code>enroll-instance</code>), <code>crates/ironclaw_host_runtime/src/first_party_tools/trace_commons.rs</code>, <code>crates/ironclaw_webui_v2</code> (Trace Commons settings tab, account-login-link route) — verified against main (post PR&nbsp;#5858), 2026-07-09. The design spec and slice plans live under <code>docs/superpowers/</code> in the ironclaw repo.</p>
+</div>
+
+<div class="foot-base">
+  <span>&copy; 2026 Trace Commons</span>
+  <span><a href="/">tracecommons.ai</a> &middot; <a href="https://github.com/TraceCommons/trace-commons-server" rel="noopener">server repo</a></span>
+</div>
+</body>
+</html>
