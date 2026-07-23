@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>devfolio Integration &mdash; Trace Commons</title>
+<meta name="description" content="How devfolio scopes a participant's trace upload to one hackathon project, collects the envelope ids, and pulls scores for those ids to rank the competition.">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:title" content="Trace Commons &mdash; devfolio Integration">
+<meta property="og:description" content="Scope an upload to one project, collect the envelope ids, pull scores for those ids to rank a hackathon.">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+  :root {
+    --accent: oklch(0.84 0.17 78);
+    --display: "Space Grotesk", -apple-system, sans-serif;
+    --serif:   "Instrument Serif", "Georgia", serif;
+    --mono:    "JetBrains Mono", ui-monospace, monospace;
+  }
+  html[data-mode="dark"] {
+    --bg:           oklch(0.13 0.006 80);
+    --bg-2:         oklch(0.16 0.006 80);
+    --bg-card:      oklch(0.17 0.008 80);
+    --fg:           oklch(0.97 0.005 80);
+    --fg-mute:      oklch(0.66 0.008 80);
+    --fg-faint:     oklch(0.44 0.008 80);
+    --line:         oklch(0.28 0.008 80);
+    --line-faint:   oklch(0.20 0.008 80);
+    --warn:         oklch(0.78 0.14 70);
+    --warn-soft:    oklch(0.22 0.03 70);
+    --accent-soft:  oklch(0.24 0.04 78);
+  }
+  html[data-mode="light"] {
+    --bg:           oklch(0.985 0.004 80);
+    --bg-2:         oklch(0.96 0.004 80);
+    --bg-card:      oklch(0.94 0.004 80);
+    --fg:           oklch(0.18 0.005 80);
+    --fg-mute:      oklch(0.42 0.006 80);
+    --fg-faint:     oklch(0.62 0.006 80);
+    --line:         oklch(0.84 0.005 80);
+    --line-faint:   oklch(0.92 0.005 80);
+    --warn:         oklch(0.55 0.13 70);
+    --warn-soft:    oklch(0.93 0.03 78);
+    --accent-soft:  oklch(0.9 0.05 78);
+  }
+  @media (prefers-color-scheme: light) { html:not([data-mode]) { color-scheme: light; } }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--body, var(--display));
+    line-height: 1.65;
+    margin: 0;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .site-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    max-width: 46rem; margin: 0 auto; padding: 1.4rem 1.4rem 0;
+  }
+  .wordmark {
+    font-family: var(--mono); font-size: 0.82rem; letter-spacing: 0.18em;
+    color: var(--fg); text-decoration: none;
+  }
+  .wordmark .wm-mark { color: var(--accent); }
+  .mode-btn {
+    background: none; border: 1px solid var(--line); border-radius: 999px;
+    color: var(--fg-mute); font-family: var(--mono); font-size: 0.7rem;
+    padding: 0.3rem 0.8rem; cursor: pointer; letter-spacing: 0.08em;
+  }
+  .mode-btn:hover { color: var(--fg); border-color: var(--fg-faint); }
+  .wrap { max-width: 46rem; margin: 0 auto; padding: 2.6rem 1.4rem 6rem; }
+  header.doc { border-bottom: 2px solid var(--accent); padding-bottom: 1.6rem; margin-bottom: 2.6rem; }
+  .eyebrow {
+    text-transform: uppercase; letter-spacing: 0.16em; font-size: 0.7rem;
+    font-weight: 500; font-family: var(--mono); color: var(--accent); margin: 0 0 0.7rem;
+  }
+  h1 {
+    font-family: var(--display); font-size: 2.1rem; font-weight: 600;
+    letter-spacing: -0.02em; line-height: 1.16; margin: 0 0 0.7rem; text-wrap: balance;
+  }
+  .meta { color: var(--fg-mute); font-size: 0.85rem; margin: 0; }
+  .meta code { font-size: 0.8rem; }
+  h2 {
+    font-family: var(--display); font-size: 1.3rem; font-weight: 600;
+    letter-spacing: -0.01em; margin: 3rem 0 0.8rem; text-wrap: balance;
+  }
+  h2 .no { color: var(--accent); font-family: var(--mono); font-size: 1.05rem; margin-right: 0.55rem; }
+  h3 { font-family: var(--display); font-size: 1.02rem; font-weight: 600; margin: 1.9rem 0 0.5rem; }
+  p, li { max-width: 66ch; }
+  ul, ol { padding-left: 1.3rem; }
+  li { margin-bottom: 0.35rem; }
+  a { color: var(--accent); }
+  em { font-family: var(--serif); font-size: 1.06em; }
+  code, pre { font-family: var(--mono); font-size: 0.84em; }
+  code { background: var(--bg-2); border: 1px solid var(--line-faint); border-radius: 4px; padding: 0.08em 0.35em; }
+  pre {
+    background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px;
+    padding: 0.9rem 1.1rem; overflow-x: auto; line-height: 1.55;
+  }
+  pre code { background: none; border: none; padding: 0; }
+  .callout {
+    border-left: 3px solid var(--accent); background: var(--accent-soft);
+    border-radius: 0 8px 8px 0; padding: 0.8rem 1.1rem; margin: 1.2rem 0;
+  }
+  .callout.warn { border-left-color: var(--warn); background: var(--warn-soft); }
+  .callout .label {
+    display: block; text-transform: uppercase; letter-spacing: 0.14em;
+    font-family: var(--mono); font-size: 0.65rem; font-weight: 700;
+    margin-bottom: 0.3rem; color: var(--accent);
+  }
+  .callout.warn .label { color: var(--warn); }
+  .callout p { margin: 0.3rem 0; }
+  .tablewrap { overflow-x: auto; margin: 1.2rem 0; }
+  table { border-collapse: collapse; font-size: 0.87rem; min-width: 100%; }
+  th {
+    text-align: left; text-transform: uppercase; letter-spacing: 0.1em;
+    font-family: var(--mono); font-size: 0.65rem; color: var(--fg-mute);
+    font-weight: 700; border-bottom: 2px solid var(--line); padding: 0.5rem 1rem 0.5rem 0;
+  }
+  td { border-bottom: 1px solid var(--line-faint); padding: 0.55rem 1rem 0.55rem 0; vertical-align: top; }
+  td code { white-space: nowrap; }
+  td.wrapcode code { white-space: normal; }
+  nav.toc {
+    background: var(--bg-card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 1rem 1.3rem; margin: 0 0 1rem; font-size: 0.92rem;
+  }
+  nav.toc ol { margin: 0.4rem 0 0; padding-left: 1.4rem; columns: 2; column-gap: 2.5rem; }
+  nav.toc li { margin-bottom: 0.25rem; break-inside: avoid; }
+  nav.toc a { text-decoration: none; }
+  nav.toc a:hover, nav.toc a:focus-visible { text-decoration: underline; }
+  @media (max-width: 560px) { nav.toc ol { columns: 1; } }
+  .foot-base {
+    max-width: 46rem; margin: 0 auto; padding: 1.4rem;
+    border-top: 1px solid var(--line-faint);
+    display: flex; justify-content: space-between; gap: 1rem;
+    color: var(--fg-faint); font-family: var(--mono); font-size: 0.72rem;
+  }
+  .foot-base a { color: var(--fg-mute); text-decoration: none; }
+  .foot-base a:hover { color: var(--fg); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+<style>
+  /* devfolio page additions, built from the same tokens as the rest of the site */
+  .score-board { margin: 1.2rem 0; border-top: 1px solid var(--line); }
+  .score-row {
+    display: grid;
+    grid-template-columns: minmax(7rem, 1fr) 5.5rem minmax(4rem, 8rem) 4.2rem;
+    gap: 0.8rem; align-items: center;
+    padding: 0.6rem 0; border-bottom: 1px solid var(--line-faint);
+    font-family: var(--mono); font-size: 0.8rem; font-variant-numeric: tabular-nums;
+  }
+  .score-row.head {
+    font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--fg-mute); font-weight: 700;
+  }
+  .score-entry { color: var(--fg-mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .score-q { color: var(--accent); font-size: 0.92rem; }
+  .meter { height: 5px; background: var(--line-faint); border-radius: 3px; overflow: hidden; }
+  .meter span { display: block; height: 100%; background: var(--accent); }
+  .pill {
+    justify-self: start; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 0.14rem 0.42rem; border: 1px solid currentColor; border-radius: 4px; font-weight: 700;
+  }
+  .pill.pass { color: var(--accent); }
+  .pill.fail { color: var(--warn); }
+  .caption { color: var(--fg-faint); font-size: 0.78rem; font-family: var(--mono); margin-top: -0.5rem; }
+  @media (max-width: 560px) {
+    .score-row { grid-template-columns: minmax(0, 1fr) 4.6rem 3.6rem; }
+    .score-row .meter, .score-row .meter-head { display: none; }
+  }
+</style>
+</head>
+<body>
+<nav class="site-nav">
+  <a class="wordmark" href="/"><span class="wm-mark">&#9671;</span> TRACE&nbsp;COMMONS</a>
+  <button class="mode-btn" type="button" onclick="const h=document.documentElement;h.dataset.mode=h.dataset.mode==='dark'?'light':'dark';">MODE</button>
+</nav>
+<div class="wrap">
+<header class="doc">
+  <p class="eyebrow">devfolio &middot; Integration Guide</p>
+  <h1>Scoring a hackathon from the traces participants produced</h1>
+  <p class="meta">A participant uploads only their project's coding-agent traces, hands you the envelope ids that came back, and you pull scores for those ids to rank the competition. Three moving parts, one join key, no schema coupling between us.<br>
+  Written for the <strong>devfolio</strong> integration. Verified against <code>trace-commons-server</code> main as of 2026-07-23.</p>
+</header>
+
+<nav class="toc" aria-label="Contents">
+  <strong>Contents</strong>
+  <ol>
+    <li><a href="#joinkey">How the pieces fit</a></li>
+    <li><a href="#scope">Scope the upload to one project</a></li>
+    <li><a href="#manifest">Hand over the manifest</a></li>
+    <li><a href="#readback">Pull scores for those ids</a></li>
+    <li><a href="#reading">Reading the scores</a></li>
+    <li><a href="#cases">Cases to handle</a></li>
+    <li><a href="#credential">Your credential</a></li>
+    <li><a href="#never">What never comes back</a></li>
+  </ol>
+</nav>
+
+<h2 id="joinkey"><span class="no">1</span>How the pieces fit</h2>
+<p>Everything hangs on <code>submission_id</code> &mdash; the envelope id Trace Commons assigns each uploaded trace. The participant's upload emits them, devfolio stores them against a hackathon entry, and the score read-back is keyed by them.</p>
+<p>Nothing devfolio-specific goes into the trace itself. You own the entry-to-ids mapping and can change it without touching us, and we never need to know what a "hackathon entry" is.</p>
+
+<h2 id="scope"><span class="no">2</span>Scope the upload to one project</h2>
+<p>By default the contributor CLI treats a developer's whole local corpus as candidates &mdash; every coding-agent session on the machine. For a hackathon that is far too much. <code>--project</code> narrows the batch to sessions whose working directory sits at or under one path, matched against the session's <em>real</em> working directory rather than a mangled folder name, so a project literally named <code>my-hack</code> matches correctly.</p>
+<pre><code>$ cd ~/code/my-hack
+$ trace-commons-contributor submit --project . --manifest ids.json
+
+  3 sessions match ~/code/my-hack
+  submitted 7c9f1a2e-4b30-4d81-9f52-1e6a0c33bd77 accepted
+  submitted 2ad4e8b1-6c07-4a99-8e13-5b70f2c4a901 accepted
+  refused (residual-secret-detected)
+
+  wrote 2 envelope id(s) to manifest</code></pre>
+<p>That refusal is the local scrubbing pass doing its job: a session still carrying a credential after redaction is never uploaded, and never reaches the manifest. Sessions are independent, so one refusal does not cost the batch.</p>
+
+<h2 id="manifest"><span class="no">3</span>Hand over the manifest</h2>
+<p><code>ids.json</code> lists exactly the envelopes that reached the server &mdash; freshly submitted and already-submitted alike, refusals and failures excluded. This is the file a participant attaches to, or pastes into, their devfolio entry.</p>
+<pre><code>[
+  {
+    "submission_id": "7c9f1a2e-4b30-4d81-9f52-1e6a0c33bd77",
+    "status": "accepted"
+  },
+  {
+    "submission_id": "2ad4e8b1-6c07-4a99-8e13-5b70f2c4a901",
+    "status": "already-submitted"
+  }
+]</code></pre>
+<p><code>already-submitted</code> means the participant had uploaded that exact session before &mdash; the id is stable and still valid to score, so keep it. Treat the list as append-only per entry: a participant can re-run <code>submit</code> as the project evolves and give you more ids.</p>
+<div class="callout warn">
+  <span class="label">Watch for</span>
+  <p><code>--manifest</code> is refused alongside <code>--dry-run</code>. A dry run mints ids locally without uploading anything, so its ids would never exist server-side and you would collect ids that can never be scored.</p>
+</div>
+
+<h2 id="readback"><span class="no">4</span>Pull scores for those ids</h2>
+<p>One request, up to 500 ids at a time. Participants each live in their own tenant, and this route reads across all of them, so devfolio makes a single call per batch rather than one per participant.</p>
+<pre><code>$ curl -X POST https://ingest.tracecommons.ai/v1/admin/scores-by-submission \
+    -H "authorization: Bearer $DEVFOLIO_TOKEN" \
+    -H "content-type: application/json" \
+    -d '{"submission_ids": ["7c9f1a2e-...", "2ad4e8b1-..."]}'</code></pre>
+<pre><code>[
+  {
+    "submission_id": "7c9f1a2e-4b30-4d81-9f52-1e6a0c33bd77",
+    "credit_quality_micros": 284000,
+    "perplexity_micros": 12400000,
+    "novelty_score_micros": 210000,
+    "gate_passed": true
+  },
+  {
+    "submission_id": "2ad4e8b1-6c07-4a99-8e13-5b70f2c4a901",
+    "credit_quality_micros": null,
+    "perplexity_micros": 9100000,
+    "novelty_score_micros": 50000,
+    "gate_passed": true
+  }
+]</code></pre>
+<p class="caption">Illustrative values &mdash; field shapes are exact, numbers are examples sized to the range real traces occupy.</p>
+
+<h2 id="reading"><span class="no">5</span>Reading the scores</h2>
+<p><code>credit_quality</code> is the headline: a single graded number in [0,&nbsp;1] combining how much genuinely new work a trace represents against how substantial it is. It is the field to rank on.</p>
+<div class="tablewrap">
+<table>
+  <thead>
+    <tr><th>Field</th><th>Type</th><th>What it means</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>credit_quality_micros</code></td>
+      <td><code>int | null</code></td>
+      <td>Graded credit quality <em>q</em> &times; 1,000,000, so <code>284000</code> is 0.284. The field to rank on. <code>null</code> until the credit-quality pass has scored that trace.</td>
+    </tr>
+    <tr>
+      <td><code>perplexity_micros</code></td>
+      <td><code>int</code></td>
+      <td>How surprising the trace is to the scoring model, &times; 1,000,000. A content-complexity signal: low values mean thin or boilerplate work.</td>
+    </tr>
+    <tr>
+      <td><code>novelty_score_micros</code></td>
+      <td><code>int</code></td>
+      <td>How distinct the trace is from what has already been contributed, &times; 1,000,000. This is what catches near-duplicate submissions.</td>
+    </tr>
+    <tr>
+      <td><code>gate_passed</code></td>
+      <td><code>bool</code></td>
+      <td>Whether the trace cleared both the novelty and substance floors. A cheap first filter before you look at <em>q</em> at all.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>All scores are integers in millionths &mdash; no floats on the wire, so equal scores compare equal and a leaderboard sorts deterministically. When a trace has been scored more than once, you always get the most recent decision.</p>
+
+<div class="callout warn">
+  <span class="label">Size your display for a compressed range</span>
+  <p>The scale runs to 1.0, but scores are heavily bottom-clustered in practice: the large majority of scored traces land below 0.3, and a genuinely strong entry is nearer 0.3 than 1.0. A leaderboard that renders <em>q</em> as a linear 0-to-1 bar will squash every real entry into the left edge and look broken. Rank on the raw value, but scale the visual to the spread you actually receive &mdash; or rank on position rather than magnitude.</p>
+</div>
+
+<div class="score-board">
+  <div class="score-row head">
+    <div>Entry</div><div>Credit q</div><div class="meter-head">Relative</div><div>Gate</div>
+  </div>
+  <div class="score-row">
+    <div class="score-entry">nightjar / 7c9f1a2e</div>
+    <div class="score-q">0.284</div>
+    <div class="meter"><span style="width: 28.4%"></span></div>
+    <div><span class="pill pass">pass</span></div>
+  </div>
+  <div class="score-row">
+    <div class="score-entry">kestrel / b81c40df</div>
+    <div class="score-q">0.161</div>
+    <div class="meter"><span style="width: 16.1%"></span></div>
+    <div><span class="pill pass">pass</span></div>
+  </div>
+  <div class="score-row">
+    <div class="score-entry">tern / 2ad4e8b1</div>
+    <div class="score-q">0.052</div>
+    <div class="meter"><span style="width: 5.2%"></span></div>
+    <div><span class="pill fail">fail</span></div>
+  </div>
+</div>
+<p class="caption">Illustrative ranking, sized to the real range. Not live data.</p>
+
+<h2 id="cases"><span class="no">6</span>Cases to handle</h2>
+<div class="tablewrap">
+<table>
+  <thead>
+    <tr><th>Situation</th><th>What you get</th><th>What it means for judging</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Id you sent is not in the response</td><td><code>omitted</code></td><td>Uploaded but not yet gated, or never uploaded at all. Retry later before treating it as a zero.</td></tr>
+    <tr><td>Row present, <em>q</em> is null</td><td><code>null</code></td><td>Gated, but not credit-scored yet. Rank on the gate result for now; <em>q</em> will fill in.</td></tr>
+    <tr><td>Wrong or missing credential</td><td><code>403</code></td><td>The token is not a competition read credential. Nothing partial is returned.</td></tr>
+    <tr><td>More than 500 ids</td><td><code>413</code></td><td>Chunk the batch. Nothing is read before the cap is checked.</td></tr>
+    <tr><td>Scoring backend unavailable</td><td><code>503</code></td><td>Deliberate fail-closed, never a silent empty list that would read as everyone scoring nothing.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="credential"><span class="no">7</span>Your credential</h2>
+<p>devfolio gets a narrow, purpose-built token &mdash; a competition read credential that can call this one route and nothing else. It is not an admin token: it cannot read traces, export anything, or write. If it leaks, the blast radius is "someone can read scores for ids they already know".</p>
+<ul>
+  <li>The credential is a signed token carrying <code>role=competition_read_worker</code>.</li>
+  <li>Send it as <code>authorization: Bearer &lt;token&gt;</code>.</li>
+  <li>We issue devfolio's for the hackathon window and rotate it after.</li>
+</ul>
+
+<h2 id="never"><span class="no">8</span>What never comes back</h2>
+<p>The read-back returns scores and nothing else. No trace content, no prompts or code, no contributor identity, no tenant. Our own audit log of your reads records only the surface name and how many rows were returned &mdash; not which ids you asked about.</p>
+<div class="callout">
+  <span class="label">One property worth knowing</span>
+  <p><code>submission_id</code> is derived from session content, so if two participants somehow upload the byte-identical session, they share an id and one row. The score is a function of the content, so the value is correct either way &mdash; but do not read a row as proof of who produced it. Your entry-to-ids mapping is the authority on attribution, not ours.</p>
+</div>
+</div>
+
+<footer class="foot-base">
+  <span>Trace Commons &mdash; devfolio integration</span>
+  <span><a href="/">tracecommons.ai</a></span>
+</footer>
+</body>
+</html>
