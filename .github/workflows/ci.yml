@@ -31,8 +31,8 @@ jobs:
         with:
           node-version: '24'
       - run: npm install --no-save --silent htmlhint@1.1.4
-      - name: Lint index.html
-        run: npx htmlhint --config .htmlhintrc index.html
+      - name: Lint HTML
+        run: npx htmlhint --config .htmlhintrc index.html about/tnc/index.html
 
   link-check:
     name: link check (lychee)
@@ -57,6 +57,7 @@ jobs:
             --exclude '^https?://claude\.ai'
             --exclude '^https?://github\.com/.*/settings'
             './*.html'
+            './about/**/*.html'
             './*.md'
             './*.jsx'
           fail: true

@@ -22,6 +22,7 @@ final CTA → `near.com`, footer with protocol links.
 | `trace-app.jsx` | Sections + composition: Nav, Hero, Marquee, WhyNow, Thesis, Credits, BigCTA, Footer. All copy lives here. |
 | `trace-hero.jsx` | Animated agent-trajectory SVG in the hero. Nodes light up in sequence (`reason → tool → observe → recover → settle`) with short hashes appearing as each step is "captured". |
 | `tweaks-panel.jsx` | Reusable dev tweaks shell (accent color, dark/light, film grain). Hidden in production unless the design-host postMessage protocol is active. |
+| `about/tnc/index.html` | Terms and conditions. Brand-system page at `/about/tnc/`. |
 
 ## Viewing locally
 
